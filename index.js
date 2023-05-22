@@ -1,7 +1,7 @@
 const audioContext = new AudioContext();
 const fileInput = byId("fileInput");
-const gainNode = new GainNode(audioContext);
-const oscillator = new OscillatorNode(audioContext, {frequency: 0});
+const gainNodes = [];
+const oscillators = [];
 const reader = new FileReader();
 const select = byId("track");
 const value = {"c":0,"d":2,"e":4,"f":5,"g":7,"a":9,"b":11,"#":1,"&":-1};
@@ -10,7 +10,17 @@ let activePress; let frequencies; let index; let indents; let midi;
 let normalGain; let notes; let octave; let on = false; let paused; let press; 
 let track; let tuning;
 
-oscillator.connect(gainNode).connect(audioContext.destination); resetVars();
+for (let i = 0; i < 128; i++) {
+  const oscillator = new OscillatorNode(audioContext, {frequency: 0});
+  const gainNode = new GainNode(audioContext);
+
+  oscillator.connect(gainNode).connect(audioContext.destination);
+
+  oscillators.push(oscillator);
+  gainNodes.push(gainNode);
+}
+
+resetVars();
 
 function byId(id) { return document.getElementById(id); };
 
