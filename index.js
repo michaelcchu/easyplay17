@@ -6,7 +6,7 @@ const reader = new FileReader();
 const select = byId("track");
 const value = {"c":0,"d":2,"e":4,"f":5,"g":7,"a":9,"b":11,"#":1,"&":-1};
 
-let activePress; let frequencies; let index; let indents; let midi; 
+let activePress; let chords; let index; let indents; let midi; 
 let normalGain; let notes; let octave; let on = false; let paused; let press; 
 let track; let tuning;
 
@@ -67,14 +67,30 @@ function format(x) {return x.trim().toLowerCase();}
 
 function pause() { paused = true; oscillator.frequency.value = 0; }
 
+function getChords(notes) {
+  ticks = [];
+  chords = [];
+  for (let note of notes) {
+    let index = ticks.indexOf(note.ticks);
+    if (index > -1) {
+      chords[index].push(note);
+    } else {
+      chords.push[[note]];
+      ticks.push(note.ticks);
+    }
+  }
+  return chords;
+}
+
 function resetVars() {
-    activePress = null; frequencies = []; index = 0; indents = []; octave = 4; 
+    activePress = null; chords = []; index = 0; indents = []; octave = 4; 
     paused = false;
     tuning = unbundle(byId("tuningNote").value);
     tuning.frequency = +byId("tuningFrequency").value;
     if (byId("fileRadio").checked) {
         track = select.selectedIndex;
-        notes = midi.tracks[track].notes.map(x => format(x.name));
+        notes = midi.tracks[track].notes;
+        chords = getChords(notes);
     } else {
         notes = format(byId("notes").value).split(/\s+/);
         midi = new Midi();
@@ -86,7 +102,9 @@ function resetVars() {
     const proposedGain = +byId("gain").value;
     if (proposedGain <= 1 && proposedGain >= 0) {normalGain = proposedGain;} 
     else {normalGain = 0.15;}
-    gainNode.gain.value = 0;
+    for (gainNode of gainNodes) {
+      gainNode.gain.value = 0;
+    }
 }
 
 function resume() { paused = false; }
