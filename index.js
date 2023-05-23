@@ -70,8 +70,12 @@ function getChords(notes) {
     if (index > -1) {
       chords[index].push(note);
     } else {
-      chords.push([note]);
-      ticks.push(note.ticks);
+      let i = 0;
+      while ((i < ticks.length) && (ticks[i] < note.ticks)) {
+        i++;
+      }
+      chords.splice(i, 0, [note]); // should insert chord in correct location
+      ticks.splice(i, 0, note.ticks);
     }
   }
   return chords;
@@ -85,9 +89,6 @@ function resetVars() {
 
     for (let i = 0; i < 128; i++) {
       const frequency = tuning.frequency * 2**((i - tuningMidiNumber)/12);
-    
-      // 48+9 = 57 for a4
-      //60 is middle C
     
       const oscillator = new OscillatorNode(audioContext, {frequency: frequency});
       const gainNode = new GainNode(audioContext);
