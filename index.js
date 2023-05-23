@@ -143,13 +143,14 @@ fileInput.addEventListener("change", () => {
 });
 reader.addEventListener("load", (e) => {
   midi = new Midi(e.target.result);
-  start();
 });
 const touchstart = (e) => {keydown(e);}; const touchend = (e) => {keyup(e);};
 const docEventTypes = [down,up];
 
 const canvas = document.getElementById("tap-area");
 const context = canvas.getContext("2d");
+
+byId("start").addEventListener("click", start);
 
 for (et of docEventTypes) {canvas.addEventListener("pointer"+et.name, et, {passive: false});}
 
