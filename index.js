@@ -10,16 +10,6 @@ let activePress; let chords; let index; let indents; let midi;
 let normalGain; let notes; let octave; let on = false; let paused; let press; 
 let track; let tuning;
 
-for (let i = 0; i < 128; i++) {
-  const oscillator = new OscillatorNode(audioContext, {frequency: 0});
-  const gainNode = new GainNode(audioContext);
-
-  oscillator.connect(gainNode).connect(audioContext.destination);
-
-  oscillators.push(oscillator);
-  gainNodes.push(gainNode);
-}
-
 resetVars();
 
 function byId(id) { return document.getElementById(id); };
@@ -36,7 +26,13 @@ function convertNotesToFrequencies() {
         frequencies.push(toFreq(note));
         const indent = note.pitch + (note.octave + 1) * 12;
         indents.push(indent);
-    } 
+    }
+}
+
+function convertNoteToMidiNumber(note) {
+  note = unbundle(note);
+  const indent = note.pitch + (note.octave + 1) * 12;
+  return indent;
 }
 
 function down(e) {
@@ -45,20 +41,25 @@ function down(e) {
     const press = e.pointerId;
     strPress = ""+press;
     if (on && !paused
-        && (index < frequencies.length) && (press != activePress)
+        && (index < chords.length) && (press != activePress)
         && (document.activeElement.nodeName !== 'INPUT')) {
-        const freq = frequencies[index];
-        if (freq > 0) {
-            gain = normalGain * (49 / freq);
+        // turn the old oscillators off
+        if (index > 0) {
+          const previousChord = chords[index-1];
+          for (let note of previousChord) {
+            const midiNumber = convertNoteToMidiNumber(note);
+            gainNodes[midiNumber].gain.setTargetAtTime(0,
+              audioContext.currentTime, 0.015);
+          }  
         }
-        if (activePress === null) {
-            oscillator.frequency.value = freq;
-        } else {
-            oscillator.frequency.setTargetAtTime(freq, 
-                audioContext.currentTime, 0.003)    
-        }
-        gainNode.gain.setTargetAtTime(gain, 
+        
+        // turn the new oscillators on
+        const chord = chords[index];
+        for (let note of chord) {
+          const midiNumber = convertNoteToMidiNumber(note);
+          gainNodes[midiNumber].gain.setTargetAtTime(normalGain,
             audioContext.currentTime, 0.015);
+        }
         activePress = press; index++;
     }
 }
@@ -73,9 +74,9 @@ function getChords(notes) {
   for (let note of notes) {
     let index = ticks.indexOf(note.ticks);
     if (index > -1) {
-      chords[index].push(note);
+      chords[index].push(format(note.name));
     } else {
-      chords.push[[note]];
+      chords.push([format(note.name)]);
       ticks.push(note.ticks);
     }
   }
@@ -87,6 +88,24 @@ function resetVars() {
     paused = false;
     tuning = unbundle(byId("tuningNote").value);
     tuning.frequency = +byId("tuningFrequency").value;
+
+    const tuningMidiNumber = tuning.pitch + 12 * (tuning.octave + 1);
+
+    for (let i = 0; i < 128; i++) {
+      const frequency = tuning.frequency * 2**((i - tuningMidiNumber)/12);
+    
+      // 48+9 = 57 for a4
+      //60 is middle C
+    
+      const oscillator = new OscillatorNode(audioContext, {frequency: frequency});
+      const gainNode = new GainNode(audioContext);
+    
+      oscillator.connect(gainNode).connect(audioContext.destination);
+    
+      oscillators.push(oscillator);
+      gainNodes.push(gainNode);
+    }
+
     if (byId("fileRadio").checked) {
         track = select.selectedIndex;
         notes = midi.tracks[track].notes;
@@ -111,8 +130,13 @@ function resume() { paused = false; }
 
 function start() { 
     window.setTimeout(() => {
-        resetVars(); convertNotesToFrequencies();
-        if (!on) {oscillator.start(); on = true;}
+        resetVars(); //convertNotesToFrequencies();
+        if (!on) {
+          for (let oscillator of oscillators) {
+            oscillator.start();
+          }
+          on = true;
+        }
     });
 }
 
@@ -126,7 +150,13 @@ function unbundle(note) {
 function up(e) {
     e.preventDefault();
     if (on && (e.pointerId === activePress)) {
-        gainNode.gain.setTargetAtTime(0, audioContext.currentTime, 0.015);
+        // turn the old oscillators off
+        const previousChord = chords[index-1];
+        for (let note of previousChord) {
+          const midiNumber = convertNoteToMidiNumber(note);
+          gainNodes[midiNumber].gain.setTargetAtTime(0,
+            audioContext.currentTime, 0.015);
+        }
         activePress = null;
     }
 }
