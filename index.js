@@ -2,6 +2,7 @@ const audioContext = new AudioContext();
 const canvas = byId("tap-area");
 const fileInput = byId("fileInput");
 const gainNodes = [];
+const library = byId("library");
 const normalGain = 0.15; 
 const reader = new FileReader();
 
@@ -93,13 +94,44 @@ function start() {
     });
 }
 
+// Add Chorale options
+let optgroup = document.createElement("optgroup");
+optgroup.label = "Chorales";
+for (let i = 253; i <= 438; i++) {
+    const option = document.createElement("option");
+    option.text = i; optgroup.append(option);
+}
+library.add(optgroup);
+
+library.addEventListener("change", loadMusic);
+loadMusic();
+
+function loadMusic() {
+  const option = library.options[library.selectedIndex];
+  let number = option.text;
+  let optgroup = option.parentElement.label;
+
+  let url;
+
+  if (optgroup === "Chorales") {
+      url = "https://proxy.cors.sh/"
+       + "https://www.tobis-notenarchiv.de/bach/07-Choraele/02-Vierstimmig/"
+       + "BWV_0" + number + ".mid"
+  }
+
+  fetch(url)
+  .then( response => response.arrayBuffer())
+  .then( data => {setup(data);})
+  .catch( e => {console.log( e );} );            
+}
+
 fileInput.addEventListener("change", () => {
     const file = fileInput.files[0]; 
     if (file) {reader.readAsArrayBuffer(file);}
 });
 
-reader.addEventListener("load", (e) => {
-  midi = new Midi(e.target.result);
+function setup(arrayBuffer) {
+  midi = new Midi(arrayBuffer);
   notes = [];
   for (let track of midi.tracks) {
     for (let note of track.notes) {
@@ -108,7 +140,9 @@ reader.addEventListener("load", (e) => {
   }
   chords = getChords(notes);
   resetVars();
-});
+}
+
+reader.addEventListener("load", (e) => {setup(e.target.result);});
 
 for (let et of ["down","up"]) {
   canvas.addEventListener("pointer"+et, key, {passive: false});
@@ -120,8 +154,6 @@ byId("start").addEventListener("click", start);
 function resize() {
   document.getElementsByClassName("wrapper")[0].style.height = 
     (window.innerHeight - 17)  + "px";
-  document.getElementsByClassName("wrapper")[0].style.width = 
-    (window.innerWidth - 17)  + "px";
 }
 
 resize();

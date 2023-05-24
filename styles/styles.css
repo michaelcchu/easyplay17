@@ -1,19 +1,16 @@
-.top {
-    grid-area: top;
-    border-radius: 8px;
-}
-
-.footer {
-    grid-area: footer;
-    border-radius: 8px;
-}
+.top {grid-area: top;}
+.middle {grid-area: middle;}
+.bottom {grid-area: bottom;}
+.footer {grid-area: footer;}
 
 .wrapper {
     display: grid;
     grid-template-areas:
         "top"
+        "middle"
+        "bottom"
         "footer";
-    grid-template-rows: auto 1fr;
+    grid-template-rows: auto auto auto 1fr;
     grid-template-columns: auto;
     grid-gap: 8px;
 }
