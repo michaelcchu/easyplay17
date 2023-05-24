@@ -88,6 +88,7 @@ fileInput.addEventListener("change", () => {
     const file = fileInput.files[0]; 
     if (file) {reader.readAsArrayBuffer(file);}
 });
+
 reader.addEventListener("load", (e) => {
   midi = new Midi(e.target.result);
   notes = [];
@@ -111,6 +112,8 @@ byId("start").addEventListener("click", start);
 function resize() {
   document.getElementsByClassName("wrapper")[0].style.height = 
     (window.innerHeight - 17)  + "px";
+  document.getElementsByClassName("wrapper")[0].style.width = 
+    (window.innerWidth - 17)  + "px";
 }
 
 resize();
