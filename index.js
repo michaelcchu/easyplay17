@@ -101,14 +101,10 @@ const touchstart = (e) => {keydown(e);}; const touchend = (e) => {keyup(e);};
 const docEventTypes = [down,up];
 
 const canvas = document.getElementById("tap-area");
-const context = canvas.getContext("2d");
 
 byId("start").addEventListener("click", start);
 
 for (et of docEventTypes) {canvas.addEventListener("pointer"+et.name, et, {passive: false});}
-
-context.fillStyle="#FF0000";
-context.fillRect(0,0,canvas.width,canvas.height);
 
 const observer = new PerformanceObserver((list) => {
     list.getEntries().forEach((entry) => {

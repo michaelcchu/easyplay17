@@ -12,14 +12,17 @@
 <meta name="msapplication-TileColor" content="#ffffff">
 <meta name="msapplication-TileImage" content="/mstile-144x144.png?v=0">
 <meta name="theme-color" content="#ffffff">
-<style>
-    input {font-family: monospace,monospace;}
-    * {touch-action: none; user-select: none;}
-</style>
+<link href="./styles/styles.css" rel="stylesheet">
+
 <body>
-<div><input id="fileInput" type="file" accept=".mid,.midi"></div>
-<div><button id="start">start</button></div>
-<canvas id="tap-area" width="200" height="200"></canvas>
-<script src="tone.js"></script>
-<script src="index.js"></script>
+    <div class="wrapper">
+        <div class="top">
+            <select id="library"></select>
+            <input id="fileInput" type="file" accept=".mid,.midi">
+            <button id="start">start</button>
+        </div>
+        <button class="footer" id="tap-area"></button>
+    </div>
+    <script src="tone.js"></script>
+    <script src="index.js"></script>
 </body>

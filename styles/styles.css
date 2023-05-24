@@ -1,0 +1,26 @@
+body {font-family: Roboto;}
+
+input {font-family: monospace,monospace;}
+* {touch-action: none; user-select: none;}
+
+.top {
+    grid-area: top;
+    border-radius: 8px;
+}
+
+.footer {
+    grid-area: footer;
+    border-radius: 8px;
+}
+
+.wrapper {
+    display: grid;
+    grid-template-areas:
+        "top"
+        "footer";
+    grid-template-rows: auto 1fr;
+    grid-template-columns: auto;
+    grid-gap: 8px;
+    width: 100%;
+    height: calc(100vh - 16px);
+}
