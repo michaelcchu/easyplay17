@@ -4,8 +4,8 @@ const gainNodes = [];
 const normalGain = 0.15; 
 const reader = new FileReader();
 
-let activePress; let chords; let index; let midi; let notes; let on = false; 
-let press; let tuning;
+let activePress; let chords = []; let index; let midi; let notes; 
+let on = false; let press; let tuning;
 
 function byId(id) {return document.getElementById(id);};
 
@@ -45,16 +45,7 @@ function getChords(notes) {
 }
 
 function resetVars() {
-    activePress = null; chords = []; index = 0; 
-
-    notes = [];
-    for (let track of midi.tracks) {
-      for (let note of track.notes) {
-        notes.push(note);
-      }
-    }
-    chords = getChords(notes);
-
+    activePress = null; index = 0; 
     for (gainNode of gainNodes) {gainNode.gain.value = 0;}
 }
 
@@ -96,7 +87,17 @@ fileInput.addEventListener("change", () => {
     const file = fileInput.files[0]; 
     if (file) {reader.readAsArrayBuffer(file);}
 });
-reader.addEventListener("load", (e) => {midi = new Midi(e.target.result);});
+reader.addEventListener("load", (e) => {
+  midi = new Midi(e.target.result);
+  notes = [];
+  for (let track of midi.tracks) {
+    for (let note of track.notes) {
+      notes.push(note);
+    }
+  }
+  chords = getChords(notes);
+  resetVars();
+});
 const touchstart = (e) => {keydown(e);}; const touchend = (e) => {keyup(e);};
 const docEventTypes = [down,up];
 
