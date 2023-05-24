@@ -91,6 +91,7 @@ function start() {
           on = true;
         }
         resetVars();
+        document.activeElement.blur();
     });
 }
 
@@ -125,12 +126,15 @@ function loadMusic() {
   fetch(url)
   .then( response => response.arrayBuffer())
   .then( data => {setup(data);})
-  .catch( e => {console.log( e );} );            
+  .catch( e => {console.log( e );} );
+
+  document.activeElement.blur();
 }
 
 fileInput.addEventListener("change", () => {
     const file = fileInput.files[0]; 
     if (file) {reader.readAsArrayBuffer(file);}
+    document.activeElement.blur();
 });
 
 function setup(arrayBuffer) {

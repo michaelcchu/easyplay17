@@ -4,6 +4,7 @@
 .footer {
     grid-area: footer; 
     background-color: #EBEBEB;
+    border-radius: 8px;
     border: 1px solid;
 }
 
