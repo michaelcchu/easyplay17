@@ -17,17 +17,7 @@ function setChord(i, gain) {
       audioContext.currentTime, 0.015);
   }  
 }
-function down(e) {
-    e.preventDefault();
-    const press = e.pointerId;
-    if (on && (index < chords.length) && (press !== activePress)) {
-        if (index > 0) {
-          setChord(index-1, 0); // turn the old oscillators off
-        }
-        setChord(index, normalGain); // turn the new oscillators on
-        activePress = press; index++;
-    }
-}
+
 
 function getChords(notes) {
   ticks = []; chords = [];
@@ -43,6 +33,33 @@ function getChords(notes) {
     }
   }
   return chords;
+}
+
+function key(e) {
+  function down(e) {
+    const strPress = "" + press;
+    const badKeys = ["Alt","Arrow","Audio","Enter","Home","Launch","Meta",
+        "Play","Tab"];
+    if (on && !badKeys.some(badKey => strPress.includes(badKey)) && !e.repeat
+      && (index < chords.length) && (press !== activePress)) {
+        if (index > 0) {
+          setChord(index-1, 0); // turn the old oscillators off
+        }
+        setChord(index, normalGain); // turn the new oscillators on
+        activePress = press; index++;
+    }
+  }
+
+  function up() {
+    if (on && (press === activePress)) {
+        setChord(index-1, 0); // turn the old oscillators off
+        activePress = null;
+    }
+  }
+
+  if (e.type.includes("key")) {press = e.key;} 
+  else {press = e.pointerId;}
+  if (["keydown","pointerdown"].includes(e.type)) {down(e);} else {up();}
 }
 
 function resetVars() {
@@ -76,14 +93,6 @@ function start() {
     });
 }
 
-function up(e) {
-    e.preventDefault();
-    if (on && (e.pointerId === activePress)) {
-        setChord(index-1, 0); // turn the old oscillators off
-        activePress = null;
-    }
-}
-
 fileInput.addEventListener("change", () => {
     const file = fileInput.files[0]; 
     if (file) {reader.readAsArrayBuffer(file);}
@@ -101,10 +110,9 @@ reader.addEventListener("load", (e) => {
   resetVars();
 });
 
-const touchstart = (e) => {keydown(e);}; const touchend = (e) => {keyup(e);};
-const docEventTypes = [down,up];
-for (let et of docEventTypes) {
-  canvas.addEventListener("pointer"+et.name, et, {passive: false});
+for (let et of ["down","up"]) {
+  canvas.addEventListener("pointer"+et, key, {passive: false});
+  document.addEventListener("key"+et, key, {passive: false});
 }
 
 byId("start").addEventListener("click", start);
